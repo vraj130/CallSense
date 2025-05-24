@@ -7,13 +7,9 @@ load_dotenv()
 class Config:
     # API Keys
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    
-    # Model settings
+    LLM_SYSTEM_PROMPT_PATH = os.getenv("LLM_SYSTEM_PROMPT_PATH", "ai_support_agent/data/system_prompt.txt")
+
     LLM_MODEL = "gpt-4o"
-    
-    # File paths
     KNOWLEDGE_BASE_PATH = "data/knowledge_base.json"
     POLICIES_PATH = "data/policies.txt"
-    
-    # Server settings
     GRADIO_PORT = 7860

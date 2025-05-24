@@ -14,10 +14,14 @@ class TranscriptEntry(BaseModel):
 
 class Task(BaseModel):
     id: str
-    description: str
-    generated_plan: List[str]  # Changed from str to List[str]
-    task_type: str  # "rag" or "agent"
-    status: str = "pending"  # pending, processing, completed, failed
+    customer_name: Optional[str] = None
+    order_number: Optional[str] = None
+    order_status: Optional[str] = None
+    issue_description: Optional[str] = None 
+    description: str 
+    generated_plan: List[str] = [] 
+    task_type: str = "general_inquiry" 
+    status: str = "pending"  
     result: Optional[str] = None
 
 class AppState(BaseModel):

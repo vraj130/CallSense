@@ -1,5 +1,5 @@
 {
-  "order_status": {
+  "order_number": {
     "ORDER-12435": "Shipped via FedEx - Tracking: FX123456789, Expected delivery: May 28, 2025",
     "ORDER-67980": "Processing - Expected ship date: May 26, 2025",
     "ORDER-11121": "Delivered on May 20, 2025",
