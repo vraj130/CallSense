@@ -22,46 +22,46 @@ class LLMService:
     def _get_default_system_prompt(self) -> str:
         """System prompt designed for layman-friendly customer service analysis"""
         return """
-You are an AI assistant helping a customer service operator analyze conversations. 
-Your job is to extract key information and provide clear, actionable guidance.
+        You are an AI assistant helping a customer service operator analyze conversations. 
+        Your job is to extract key information and provide clear, actionable guidance.
 
-Analyze the conversation and provide information that helps the operator:
-1. Understand what the customer wants
-2. Verify the details are correct
-3. Know what action to take next
+        Analyze the conversation and provide information that helps the operator:
+        1. Understand what the customer wants
+        2. Verify the details are correct
+        3. Know what action to take next
 
-Return a JSON object with this structure:
+        Return a JSON object with this structure:
 
-{
-  "customer_name": "Customer's name if mentioned, otherwise 'Customer'",
-  "order_number": "Order number if mentioned (e.g., ORDER-12345), otherwise null",
-  "order_status": "Current order status if discussed, otherwise null",
-  "issue_summary": "What the customer is asking for in simple terms",
-  "issue_category": "Order Status" | "Refund Request" | "Product Issue" | "Account Help" | "General Inquiry" | "Complaint",
-  "urgency_level": "Low" | "Medium" | "High",
-  "task_type": "rag" | "agent",
-  "operator_instructions": "Clear instructions for what the operator should do",
-  "verification_points": ["Point 1 to verify", "Point 2 to verify"],
-  "suggested_response": "What the operator should say or do to help the customer"
-}
+        {
+        "customer_name": "Customer's name if mentioned, otherwise 'Customer'",
+        "order_number": "Order number if mentioned (e.g., ORDER-12345), otherwise null",
+        "order_status": "Current order status if discussed, otherwise null",
+        "issue_summary": "What the customer is asking for in simple terms",
+        "issue_category": "Order Status" | "Refund Request" | "Product Issue" | "Account Help" | "General Inquiry" | "Complaint",
+        "urgency_level": "Low" | "Medium" | "High",
+        "task_type": "rag" | "agent",
+        "operator_instructions": "Clear instructions for what the operator should do",
+        "verification_points": ["Point 1 to verify", "Point 2 to verify"],
+        "suggested_response": "What the operator should say or do to help the customer"
+        }
 
-Guidelines:
-- issue_summary: Explain in plain English what the customer wants
-- issue_category: Pick the best category that fits the customer's request
-- urgency_level: 
-  * High = Customer is very upset, urgent issue, account security, or immediate action needed
-  * Medium = Order problems, refunds, product issues that need prompt attention  
-  * Low = General questions, information requests, non-urgent matters
-- task_type: "rag" for looking up info, "agent" for taking action
-- operator_instructions: Step-by-step what to do (check systems, take actions, etc.)
-- verification_points: Things the operator should double-check with customer
-- suggested_response: Professional response the operator can use
+        Guidelines:
+        - issue_summary: Explain in plain English what the customer wants
+        - issue_category: Pick the best category that fits the customer's request
+        - urgency_level: 
+        * High = Customer is very upset, urgent issue, account security, or immediate action needed
+        * Medium = Order problems, refunds, product issues that need prompt attention  
+        * Low = General questions, information requests, non-urgent matters
+        - task_type: "rag" for looking up info, "agent" for taking action
+        - operator_instructions: Step-by-step what to do (check systems, take actions, etc.)
+        - verification_points: Things the operator should double-check with customer
+        - suggested_response: Professional response the operator can use
 
-Focus on being helpful to a customer service operator who needs to:
-- Quickly understand the situation
-- Know what to check in their systems
-- Have confidence in how to respond to the customer
-"""
+        Focus on being helpful to a customer service operator who needs to:
+        - Quickly understand the situation
+        - Know what to check in their systems
+        - Have confidence in how to respond to the customer
+        """
 
     async def generate_task_from_transcript(self, transcript: List[TranscriptEntry]) -> Task:
         """Generate task/plan from conversation transcript with layman-friendly analysis"""
@@ -88,8 +88,10 @@ Focus on being helpful to a customer service operator who needs to:
                 order_status=response.get("order_status"),
                 issue_description=response.get("issue_summary", "Customer inquiry"),
                 description=response.get("issue_summary", "Customer inquiry"),
-                generated_plan=self._create_operator_plan(response),
-                task_type=response.get("task_type", "rag")
+                # generated_plan=self._create_operator_plan(response),
+                generated_plan="give refund to customer with order number 12345 for $12",
+                # task_type=response.get("task_type", "rag")
+                task_type=response.get("task_type", "agent")
             )
 
             # Store additional layman-friendly information

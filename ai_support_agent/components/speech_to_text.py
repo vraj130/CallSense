@@ -3,21 +3,14 @@ from datetime import datetime
 from typing import AsyncGenerator, Optional, Dict, Any, Callable
 from utils.models import TranscriptEntry, Speaker
 import os
-import logging
 import threading
 import pyaudio
 from config import Config
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 try:
     import assemblyai as aai
 except ImportError:
-    logger.error(
-        "AssemblyAI package not found. Please install it with: pip install assemblyai"
-    )
+    print("AssemblyAI package not found. Please install it with: pip install assemblyai")
     raise
 
 
@@ -41,12 +34,10 @@ class SpeechToTextService:
             device_index = default_device.get("index")
             if not isinstance(device_index, int):
                 raise ValueError("Invalid device index")
-            logger.info(
-                f"Using default input device: {default_device.get('name')}"
-            )
+            print(f"Using default input device: {default_device.get('name')}")
             return device_index
         except Exception as e:
-            logger.warning(f"Could not get default input device: {e}")
+            print(f"Could not get default input device: {e}")
             # Try to find any working input device
             for i in range(self._audio.get_device_count()):
                 device_info = self._audio.get_device_info_by_index(i)
@@ -55,9 +46,7 @@ class SpeechToTextService:
                     isinstance(max_input_channels, (int, float))
                     and max_input_channels > 0
                 ):
-                    logger.info(
-                        f"Using input device: {device_info.get('name')}"
-                    )
+                    print(f"Using input device: {device_info.get('name')}")
                     return i
             raise RuntimeError("No input devices found")
 
@@ -67,7 +56,7 @@ class SpeechToTextService:
 
     async def start_transcription_with_callback(self):
         """Start transcription service with callback approach"""
-        logger.info("Starting AssemblyAI transcription service with callback")
+        print("Starting AssemblyAI transcription service with callback")
         self.is_running = True
 
         try:
@@ -94,7 +83,7 @@ class SpeechToTextService:
                     sample_rate=44_100,
                 )
             except Exception as e:
-                logger.error(f"Failed to initialize microphone: {e}")
+                print(f"Failed to initialize microphone: {e}")
                 raise RuntimeError(f"Could not initialize microphone: {e}")
 
             if not self.microphone_stream:
@@ -108,7 +97,7 @@ class SpeechToTextService:
                 await asyncio.sleep(0.1)
 
         except Exception as e:
-            logger.error(f"Transcription error: {e}")
+            print(f"Transcription error: {e}")
             self.stop_transcription()
         finally:
             if self._streaming_task and not self._streaming_task.done():
@@ -117,14 +106,14 @@ class SpeechToTextService:
     async def _stream_audio(self):
         """Stream audio in a separate task"""
         if not self.transcriber or not self.microphone_stream:
-            logger.error("Transcriber or microphone stream not initialized")
+            print("Transcriber or microphone stream not initialized")
             self.stop_transcription()
             return
 
         try:
             self.transcriber.stream(self.microphone_stream)
         except Exception as e:
-            logger.error(f"Audio streaming error: {e}")
+            print(f"Audio streaming error: {e}")
             self.stop_transcription()
 
     def stop_transcription(self):
@@ -134,13 +123,13 @@ class SpeechToTextService:
             try:
                 self.transcriber.close()
             except Exception as e:
-                logger.error(f"Error closing transcriber: {e}")
+                print(f"Error closing transcriber: {e}")
         if self._audio:
             try:
                 self._audio.terminate()
             except Exception as e:
-                logger.error(f"Error terminating audio: {e}")
-        logger.info("Transcription service stopped")
+                print(f"Error terminating audio: {e}")
+        print("Transcription service stopped")
 
     def _handle_transcript(self, transcript: aai.RealtimeTranscript):
         """Handle incoming transcript data - treat all speech as from speaker"""
@@ -158,23 +147,23 @@ class SpeechToTextService:
                 text=transcript.text,
                 timestamp=datetime.now(),
             )
-            logger.info(f"Generated entry: {entry.speaker.value}: {entry.text}")
+            print(f"Generated entry: {entry.speaker.value}: {entry.text}")
 
             # Call the callback if set
             if self._entry_callback:
                 try:
                     self._entry_callback(entry)
                 except Exception as e:
-                    logger.error(f"Error in entry callback: {e}")
+                    print(f"Error in entry callback: {e}")
 
     def _handle_error(self, error: aai.RealtimeError):
         """Handle transcription errors"""
-        logger.error(f"Transcription error: {error}")
+        print(f"Transcription error: {error}")
 
     def _handle_open(self, session_opened: aai.RealtimeSessionOpened):
         """Handle session open"""
-        logger.info(f"Session opened: {session_opened.session_id}")
+        print(f"Session opened: {session_opened.session_id}")
 
     def _handle_close(self):
         """Handle session close"""
-        logger.info("Session closed")
+        print("Session closed")

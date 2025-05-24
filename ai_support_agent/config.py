@@ -26,5 +26,6 @@ class Config:
     SERVER_HOST = "localhost"
     SERVER_PORT = 7866
     # Browser Configuration
-    BROWSER_HEADLESS = True
+    BROWSER_HEADLESS = False  # Set to False to see the browser in action
     BROWSER_TIMEOUT = 30000  # 30 seconds
+    BROWSER_WINDOW_SIZE = (1280, 800)  # Width, Height
