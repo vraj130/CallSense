@@ -2,3 +2,4 @@ gradio==4.44.1
 pydantic==2.6.1
 python-dotenv==1.0.1
 aiofiles==23.2.1
+assemblyai==0.40.2

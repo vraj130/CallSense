@@ -6,7 +6,7 @@ import os
 import logging
 import threading
 import pyaudio
-
+from config import Config
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,18 +31,11 @@ class SpeechToTextService:
         self._streaming_task = None
         self._entry_callback: Optional[Callable] = None
 
-        # Get API key from environment variables
-        api_key = os.getenv("ASSEMBLYAI_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "ASSEMBLYAI_API_KEY environment variable is required"
-            )
 
-        # Set the API key
-        aai.settings.api_key = api_key
+        aai.settings.api_key = Config.ASSEMBLYAI_API_KEY
 
         # List available audio devices
-        self._list_audio_devices()
+        # self._list_audio_devices()
 
     def _list_audio_devices(self):
         """List available audio input devices"""
@@ -231,7 +224,7 @@ class SpeechToTextService:
             if self._entry_callback:
                 try:
                     self._entry_callback(entry)
-                    logger.info("Entry sent via callback")
+                    # logger.info("Entry sent via callback")
                 except Exception as e:
                     logger.error(f"Error in entry callback: {e}")
 

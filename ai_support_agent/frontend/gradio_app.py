@@ -118,10 +118,6 @@ class GradioInterface:
                 "conversation": conversation,
                 "status": f"Task: {state.current_task.status if state.current_task else 'No active task'}",
             }
-
-            print(
-                f"UI Update - Conversation items: {len(conversation)}"
-            )  # Debug print
             return conversation, state_dict, debug_text
 
         except Exception as e:
