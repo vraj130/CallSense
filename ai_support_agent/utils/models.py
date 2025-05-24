@@ -20,7 +20,7 @@ class Task(BaseModel):
     issue_description: Optional[str] = None 
     description: str 
     generated_plan: List[str] = [] 
-    task_type: str = "general_inquiry" 
+    task_type: str = "rag" 
     status: str = "pending"  
     result: Optional[str] = None
 
