@@ -164,7 +164,7 @@ def process_cancel_order(order_id):
 
 # Create Gradio interface
 with gr.Blocks(css=custom_css, theme=gr.themes.Base()) as demo:
-    gr.HTML('<div class="header-title">🛒 W<span style="color: #ffc220;">O</span>LMERT Customer Service Portal</div>')
+    gr.HTML('<div class="header-title">🛒 M<span style="color: #ffc220;">A</span>LWART Customer Service Portal</div>')
     
     with gr.Row():
         with gr.Column(scale=1, elem_classes=["main-container"]):
