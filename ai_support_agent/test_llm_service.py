@@ -2,8 +2,8 @@ import asyncio
 import uuid
 from datetime import datetime
 
-from .components.llm_service import LLMService
-from .utils.models import TranscriptEntry, Speaker, Task
+from components.llm_service import LLMService
+from utils.models import TranscriptEntry, Speaker, Task
 
 async def main():
     print("Testing LLMService...")
