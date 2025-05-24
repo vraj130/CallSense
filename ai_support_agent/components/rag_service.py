@@ -2,11 +2,13 @@ import json
 import aiofiles
 from typing import Dict, List
 from config import Config
+from components.llm_service import LLMService
 
 class RAGService:
     def __init__(self):
         self.knowledge_base = {}
         self.policies = ""
+        self.llm_service = LLMService()
     
     async def initialize(self):
         """Load knowledge base and policies"""
@@ -37,31 +39,34 @@ class RAGService:
             self.policies = "Company policies: Customer satisfaction is our priority."
     
     async def search(self, query: str) -> str:
-        """Simple keyword-based search"""
-        query+=" 12345"
-
-        print(f"[RAGService] Performing search for query: '{query}'")
-        query_lower = query.lower()
-        results = []
-        
-        # Search in knowledge base
+        """Context-based LLM response using all knowledge base and policies as context."""
+        # Flatten knowledge base and policies into a context string
+        context = "Knowledge Base and Policies:\n"
         for key, value in self.knowledge_base.items():
-            if any(keyword in query_lower for keyword in key.lower().split('_')):
-                if isinstance(value, dict):
-                    # Check for specific order numbers
-                    for order_id, status in value.items():
-                        if order_id in query:
-                            results.append(f"{order_id}: {status}")
-                else:
-                    results.append(f"{key}: {value}")
-        
-        # Search in policies
-        if "policy" in query_lower or "return" in query_lower:
-            results.append(f"Policy Information: {self.policies[:200]}...")
-        
-        if results:
-            print(f"[RAGService] Search results: {results}")
-            return "\n".join(results)
+            if isinstance(value, dict):
+                context += f"{key}:\n"
+                for subkey, subval in value.items():
+                    context += f"  {subkey}: {subval}\n"
+            else:
+                context += f"{key}: {value}\n"
+        context += f"\nPolicies:\n{self.policies}\n"
+        prompt = f"""
+You are a helpful assistant. Use the following context to answer the user's question.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer as helpfully and concisely as possible based only on the provided context.
+"""
+        print(f"[RAGService] Sending prompt to LLM:\n{prompt}")
+        # Use the LLMService to get a response
+        response = await self.llm_service._call_openai(prompt)
+        # If the LLM returns a dict, get the content; otherwise, return as is
+        if isinstance(response, dict) and "answer" in response:
+            return response["answer"]
+        elif isinstance(response, str):
+            return response
         else:
-            print("[RAGService] No relevant information found.")
-            return "No relevant information found. Please provide more details." 
+            return str(response) 
