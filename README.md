@@ -45,7 +45,7 @@ echo "OPENAI_API_KEY=your_api_key_here" > .env
 ### Running the Application
 
 ```bash
-uv run python main.py
+python main.py
 ```
 
 The application will launch at `http://localhost:7860`

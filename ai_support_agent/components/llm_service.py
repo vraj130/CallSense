@@ -21,6 +21,7 @@ class LLMService:
 
     async def generate_task_from_transcript(self, transcript: List[TranscriptEntry]) -> Task:
         """Generate task/plan from conversation transcript"""
+        print("\n=== LLM Service: generate_task_from_transcript ===")
         
         # Format transcript for LLM
         conversation = "\n".join([f"{entry.speaker.value}: {entry.text}" for entry in transcript])
@@ -30,8 +31,10 @@ class LLMService:
         prompt = f"Transcript:\n{conversation}"
         
         try:
+            print("Calling OpenAI API...")
             # Always call OpenAI API
             response = await self._call_openai(prompt)
+            print("OpenAI API call completed")
             
             # Map LLM response to Task model fields
             return Task(

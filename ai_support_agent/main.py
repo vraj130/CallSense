@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from components.speech_to_text import SpeechToTextService
 from components.llm_service import LLMService
 from components.orchestrator import Orchestrator
@@ -22,70 +23,71 @@ class CustomerSupportAIApp:
             self.state_manager
         )
         self.frontend = GradioInterface(self.state_manager)
-        
-        # Background tasks
         self.transcription_task = None
-    
+        self.background_loop = None
+        self.background_thread = None
+
     async def initialize(self):
         """Initialize all services"""
         await self.rag_service.initialize()
         await self.ai_agent.initialize()
         print("All services initialized")
     
-    async def start_transcription(self):
-        """Start speech-to-text transcription"""
-        self.transcription_task = asyncio.create_task(self._transcription_loop())
-    
     async def _transcription_loop(self):
         """Background task for transcription"""
-        async for entry in self.speech_service.start_transcription():
-            await self.state_manager.add_transcript_entry(entry)
+        print("\n=== Starting transcription loop ===")
+        try:
+            async for entry in self.speech_service.start_transcription():
+                print(f"\nReceived entry: {entry.speaker.value}: {entry.text}")
+                await self.state_manager.add_transcript_entry(entry)
+                print("Entry added to state manager")
+        except Exception as e:
+            print(f"Error in transcription loop: {str(e)}")
+            raise
     
-    async def process_trigger(self):
-        """Process frontend trigger to generate and execute AI task"""
-        # Get current transcript
-        transcript = await self.state_manager.get_transcript()
-        
+    def run_background_loop(self):
+        self.background_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.background_loop)
+        self.background_loop.run_until_complete(self.initialize())
+        self.background_loop.run_until_complete(self._transcription_loop())
+
+    def start_background_services(self):
+        self.background_thread = threading.Thread(target=self.run_background_loop, daemon=True)
+        self.background_thread.start()
+        print("Background services started")
+
+    def process_trigger_sync(self):
+        print("\n=== Processing trigger ===")
+        transcript = self.state_manager.get_state().transcript
+        print(f"Current transcript length: {len(transcript)}")
         if not transcript:
-            return "No conversation to process"
-        
-        # Generate task from transcript
-        task = await self.llm_service.generate_task_from_transcript(transcript)
-        
-        # Route and execute task
-        result = await self.orchestrator.route_task(task)
-        
-        return result
-    
-    def setup_frontend_handlers(self):
-        """Connect frontend handlers to backend logic"""
-        # Override the trigger handler in frontend
-        original_handle_trigger = self.frontend.handle_trigger
-        
-        async def enhanced_handle_trigger(state_dict):
-            try:
-                # Process the trigger
-                await self.process_trigger()
-                # Then call original handler to update UI
-                return await original_handle_trigger(state_dict)
-            except Exception as e:
-                return f"Error: {str(e)}", "", state_dict
-        
-        self.frontend.handle_trigger = enhanced_handle_trigger
-    
-    async def run(self):
-        """Main application loop"""
-        # Initialize services
-        await self.initialize()
-        
-        # Start transcription
-        await self.start_transcription()
-        
-        # Setup frontend handlers
-        self.setup_frontend_handlers()
-        
-        # Launch Gradio interface (this blocks)
-        self.frontend.launch(
+            print("No transcript found")
+            return "No conversation to process", ""
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            print("Generating task from transcript...")
+            task = loop.run_until_complete(
+                self.llm_service.generate_task_from_transcript(transcript)
+            )
+            print(f"Generated task: {task.description}")
+            print("Routing task...")
+            result = loop.run_until_complete(
+                self.orchestrator.route_task(task)
+            )
+            print(f"Task result: {result}")
+            loop.close()
+            return "Task completed successfully", result
+        except Exception as e:
+            print(f"Error in process_trigger_sync: {str(e)}")
+            return f"Error: {str(e)}", ""
+
+    def run(self):
+        self.start_background_services()
+        interface = self.frontend.create_interface(
+            trigger_callback=self.process_trigger_sync
+        )
+        interface.launch(
             server_port=Config.GRADIO_PORT,
             share=False,
             inbrowser=True
@@ -95,9 +97,8 @@ def main():
     """Entry point"""
     app = CustomerSupportAIApp()
     
-    # Run the application
     try:
-        asyncio.run(app.run())
+        app.run()
     except KeyboardInterrupt:
         print("\nShutting down...")
         if app.speech_service:

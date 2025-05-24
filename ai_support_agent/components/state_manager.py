@@ -11,6 +11,7 @@ class StateManager:
     
     async def add_transcript_entry(self, entry: TranscriptEntry):
         async with self._lock:
+            print(f"\nAdding transcript entry: {entry.speaker.value}: {entry.text}")
             self.state.transcript.append(entry)
             await self._notify_listeners()
     
@@ -24,6 +25,7 @@ class StateManager:
     
     async def get_transcript(self) -> List[TranscriptEntry]:
         async with self._lock:
+            print(f"\nGetting transcript, current length: {len(self.state.transcript)}")
             return self.state.transcript.copy()
     
     def add_listener(self, callback: Callable):
@@ -37,4 +39,5 @@ class StateManager:
                 listener(self.state)
     
     def get_state(self) -> AppState:
-        return self.state.copy() 
+        """Synchronous method to get current state"""
+        return self.state.model_copy() 
