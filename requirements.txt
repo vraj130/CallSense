@@ -1,0 +1,8 @@
+# Core dependencies
+numpy>=1.24.0
+websockets>=11.0.0
+langchain-openai>=0.0.2
+autopep8>=2.0.0
+pylint>=2.17.0
+python-dotenv>=0.21.0
+openai>=1.0.0

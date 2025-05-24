@@ -1,13 +1,15 @@
 import openai
+from openai import AsyncOpenAI
 from typing import List
 import json
-from config import Config
-from utils.models import TranscriptEntry, Task
+from ..config import Config
+from ..utils.models import TranscriptEntry, Task
 import uuid
 
 class LLMService:
     def __init__(self):
-        openai.api_key = Config.OPENAI_API_KEY
+        # Initialize the AsyncOpenAI client
+        self.client = AsyncOpenAI(api_key=Config.OPENAI_API_KEY)
     
     async def generate_task_from_transcript(self, transcript: List[TranscriptEntry]) -> Task:
         """Generate task/plan from conversation transcript"""
@@ -30,11 +32,8 @@ class LLMService:
         """
         
         try:
-            # For MVP, use a simple mock response
-            if Config.OPENAI_API_KEY:
-                response = await self._call_openai(prompt)
-            else:
-                response = self._mock_response(transcript)
+            # Always call OpenAI API
+            response = await self._call_openai(prompt)
             
             return Task(
                 id=str(uuid.uuid4()),
@@ -47,8 +46,8 @@ class LLMService:
             return self._fallback_task()
     
     async def _call_openai(self, prompt: str) -> dict:
-        """Call OpenAI API"""
-        response = openai.ChatCompletion.create(
+        """Call OpenAI API using the new v1.x.x syntax"""
+        response = await self.client.chat.completions.create(
             model=Config.LLM_MODEL,
             messages=[
                 {"role": "system", "content": "You are a helpful customer support assistant."},
@@ -56,7 +55,20 @@ class LLMService:
             ],
             temperature=0.7
         )
-        return json.loads(response.choices[0].message.content)
+        # Assuming the model is prompted to return a JSON string in its content
+        raw_content = response.choices[0].message.content
+        print(f"--- LLM Raw Response Content ---\n{raw_content}\n--------------------------------") # Debug print
+        
+        # Strip markdown fences if present
+        cleaned_content = raw_content.strip()
+        if cleaned_content.startswith("```json"):
+            cleaned_content = cleaned_content[len("```json"):].strip()
+        if cleaned_content.startswith("```"):
+             cleaned_content = cleaned_content[len("```"):].strip()
+        if cleaned_content.endswith("```"):
+            cleaned_content = cleaned_content[:-len("```")].strip()
+            
+        return json.loads(cleaned_content)
     
     def _mock_response(self, transcript: List[TranscriptEntry]) -> dict:
         """Mock response for testing without API key"""

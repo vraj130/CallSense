@@ -15,7 +15,7 @@ class TranscriptEntry(BaseModel):
 class Task(BaseModel):
     id: str
     description: str
-    generated_plan: str
+    generated_plan: List[str]  # Changed from str to List[str]
     task_type: str  # "rag" or "agent"
     status: str = "pending"  # pending, processing, completed, failed
     result: Optional[str] = None
