@@ -67,9 +67,11 @@ class CustomerSupportAIApp:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             print("Generating task from transcript...")
+            print("sending to LLM")
             task = loop.run_until_complete(
                 self.llm_service.generate_task_from_transcript(transcript)
             )
+            print("received task from LLM")
             print(f"Generated task: {task.description}")
             print("Routing task...")
             result = loop.run_until_complete(

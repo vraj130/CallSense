@@ -87,20 +87,24 @@ class GradioInterface:
         
         return conversation, state_dict
     
-    async def handle_trigger(self, state_dict: dict) -> Tuple[str, str, dict]:
-        """Handle trigger button click"""
-        # This will be connected to the main app logic
-        status = "Processing transcript with AI..."
-        result = "AI analysis will appear here"
-        
-        # Update status
-        current_state = self.state_manager.get_state()
-        if current_state.current_task:
-            status = f"Task Status: {current_state.current_task.status}\nTask: {current_state.current_task.description}"
-            if current_state.current_task.result:
-                result = current_state.current_task.result
-        
-        return status, result, state_dict
+    def handle_trigger(self, state_dict: dict) -> Tuple[str, str, dict]:
+        print("\n=== Trigger button clicked ===")  # Debug print
+        if self.trigger_callback:
+            try:
+                status, result = self.trigger_callback()
+                return status, result, state_dict
+            except Exception as e:
+                print(f"Error in trigger callback: {str(e)}")
+                return f"Error: {str(e)}", "", state_dict
+        else:
+            status = "Processing transcript with AI..."
+            result = "AI analysis will appear here"
+            current_state = self.state_manager.get_state()
+            if current_state.current_task:
+                status = f"Task Status: {current_state.current_task.status}\nTask: {current_state.current_task.description}"
+                if current_state.current_task.result:
+                    result = current_state.current_task.result
+            return status, result, state_dict
     
     def launch(self, **kwargs):
         """Launch Gradio interface"""
