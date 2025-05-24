@@ -1,0 +1,14 @@
+[project]
+name = "hackathon-repo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "browser-use>=0.2.1",
+    "langchain-openai>=0.3.11",
+    "openai>=1.82.0",
+    "openai-whisper>=20240930",
+    "pyaudio>=0.2.14",
+    "websockets>=15.0.1",
+]
