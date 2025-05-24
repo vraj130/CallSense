@@ -39,4 +39,5 @@ class StateManager:
                 listener(self.state)
     
     def get_state(self) -> AppState:
-        return self.state.copy() 
+        """Synchronous method to get current state"""
+        return self.state.model_copy() 

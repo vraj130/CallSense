@@ -1,6 +1,5 @@
 import gradio as gr
-import asyncio
-from typing import List, Tuple
+from typing import List, Tuple, Callable, Optional
 from components.state_manager import StateManager
 from utils.models import AppState, Speaker
 
@@ -8,10 +7,11 @@ class GradioInterface:
     def __init__(self, state_manager: StateManager):
         self.state_manager = state_manager
         self.interface = None
+        self.trigger_callback = None
         
-    def create_interface(self):
+    def create_interface(self, trigger_callback: Optional[Callable] = None):
         """Create Gradio interface"""
-        
+        self.trigger_callback = trigger_callback
         with gr.Blocks(title="Customer Support AI Assistant") as self.interface:
             gr.Markdown("# Customer Support AI Assistant")
             
