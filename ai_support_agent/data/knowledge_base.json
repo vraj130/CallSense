@@ -1,0 +1,20 @@
+{
+  "order_status": {
+    "ORDER-12345": "Shipped via FedEx - Tracking: FX123456789, Expected delivery: Dec 28, 2024",
+    "ORDER-67890": "Processing - Expected ship date: Dec 26, 2024",
+    "ORDER-11111": "Delivered on Dec 20, 2024"
+  },
+  "return_policy": {
+    "general": "Items can be returned within 30 days of purchase in original condition",
+    "exceptions": "Final sale items, personalized products, and perishables cannot be returned"
+  },
+  "shipping_info": {
+    "standard": "5-7 business days - $5.99",
+    "express": "2-3 business days - $15.99",
+    "overnight": "Next business day - $29.99"
+  },
+  "faq": {
+    "payment_methods": "We accept all major credit cards, PayPal, and Apple Pay",
+    "international_shipping": "Available to select countries - rates vary by destination"
+  }
+} 
