@@ -1,7 +1,7 @@
 from utils.models import Task
-from components.rag_service import RAGService
-from components.ai_agent import AIAgent
-from components.state_manager import StateManager
+from .rag_service import RAGService
+from .ai_agent import AIAgent
+from .state_manager import StateManager
 
 class Orchestrator:
     def __init__(self, rag_service: RAGService, ai_agent: AIAgent, state_manager: StateManager):

@@ -2,8 +2,8 @@ import openai
 from openai import AsyncOpenAI
 from typing import List
 import json
-from ..config import Config
-from ..utils.models import TranscriptEntry, Task
+from config import Config
+from utils.models import TranscriptEntry, Task
 import uuid
 
 class LLMService:
