@@ -1,21 +1,38 @@
-Company Customer Service Policies
+# 📋 Company Customer Service Policies
 
-1. Customer First Approach
-   - Always prioritize customer satisfaction
-   - Respond to inquiries within 24 hours
-   - Escalate complex issues to supervisors
+## 1. Customer First Approach
+- Always prioritize customer satisfaction  
+- Respond to inquiries within 24 hours  
+- Escalate complex issues to supervisors  
 
-2. Return and Refund Policy
-   - 30-day return window for most items
-   - Original packaging required
-   - Refunds processed within 5-7 business days
+## 2. Return and Refund Policy
+- 30-day return window for most items  
+- Original packaging required  
+- Refunds processed within 5–7 business days  
 
-3. Privacy and Security
-   - Never share customer personal information
-   - Verify identity before making account changes
-   - Use secure channels for sensitive data
+## 3. Privacy and Security
+- Never share customer personal information  
+- Verify identity before making account changes  
+- Use secure channels for sensitive data  
 
-4. Service Standards
-   - Professional and courteous communication
-   - Accurate information and updates
-   - Follow up on unresolved issues 
+## 4. Service Standards
+- Professional and courteous communication  
+- Accurate information and updates  
+- Follow up on unresolved issues  
+
+
+## 5 Return Policy
+
+- **General:** Items can be returned within 30 days of purchase in original condition.  
+- **Exceptions:** Final sale items, personalized products, and perishables cannot be returned.  
+
+## 6 Shipping Info
+
+- **Standard Shipping:** 5–7 business days — $5.99  
+- **Express Shipping:** 2–3 business days — $15.99  
+- **Overnight Shipping:** Next business day — $29.99  
+
+## 7 FAQ
+
+- **Payment Methods:** We accept all major credit cards, PayPal, and Apple Pay.  
+- **International Shipping:** Available to select countries — rates vary by destination.  

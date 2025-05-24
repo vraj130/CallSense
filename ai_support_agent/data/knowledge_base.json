@@ -1,20 +1,24 @@
 {
   "order_status": {
-    "ORDER-12345": "Shipped via FedEx - Tracking: FX123456789, Expected delivery: Dec 28, 2024",
-    "ORDER-67890": "Processing - Expected ship date: Dec 26, 2024",
-    "ORDER-11111": "Delivered on Dec 20, 2024"
+    "ORDER-12435": "Shipped via FedEx - Tracking: FX123456789, Expected delivery: May 28, 2025",
+    "ORDER-67980": "Processing - Expected ship date: May 26, 2025",
+    "ORDER-11121": "Delivered on May 20, 2025",
+    "ORDER-22512": "Delivered on May 5, 2025",
+    "ORDER-33153": "Delivered on April 10, 2025",
+    "ORDER-44414": "Delivered on May 22, 2025",
+    "ORDER-55515": "Delivered on March 15, 2025",
+    "ORDER-66616": "Delivered on May 10, 2025",
+    "ORDER-77717": "Shipped via UPS - Tracking: UPS987654321, Expected delivery: May 27, 2025"
   },
-  "return_policy": {
-    "general": "Items can be returned within 30 days of purchase in original condition",
-    "exceptions": "Final sale items, personalized products, and perishables cannot be returned"
-  },
-  "shipping_info": {
-    "standard": "5-7 business days - $5.99",
-    "express": "2-3 business days - $15.99",
-    "overnight": "Next business day - $29.99"
-  },
-  "faq": {
-    "payment_methods": "We accept all major credit cards, PayPal, and Apple Pay",
-    "international_shipping": "Available to select countries - rates vary by destination"
+  "order_customers": {
+    "Alicia Gomez": "ORDER-12435",
+    "Michael Chen": "ORDER-67980",
+    "Priya Nair": "ORDER-11121",
+    "Jason Lee": "ORDER-22512",
+    "Elena Martinez": "ORDER-33153",
+    "Robert Kim": "ORDER-44414",
+    "Fatima Sheikh": "ORDER-55515",
+    "Dylan Park": "ORDER-66616",
+    "Sophia Nguyen": "ORDER-77717"
   }
-} 
+}
