@@ -13,10 +13,14 @@ class Orchestrator:
     async def route_task(self, task: Task) -> str:
         """Route task to appropriate service based on task type"""
         
+    
         # Update task status
         task.status = "processing"
         await self.state_manager.update_task(task)
         
+        # if task is for information and not action, then we can use RAG service otherwise we can use AI agent
+        # this should ideally be done by LLM step previously
+
         try:
             if task.task_type == "rag":
                 result = await self.rag_service.search(task.description)

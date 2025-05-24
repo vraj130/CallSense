@@ -35,17 +35,42 @@ class LLMService:
             # Always call OpenAI API
             response = await self._call_openai(prompt)
             print("OpenAI API call completed")
+
+
+
+            # task = Task(
+            #     id=str(uuid.uuid4()),
+            #     customer_name=response.get("customer_name"),
+            #     order_number=response.get("order_number"),
+            #     order_status=response.get("order_status"),
+            #     issue_description=response.get("issue_description"), # Store raw issue_description
+            #     description=response.get("issue_description", "No description provided"), # Map to main description
+            #     generated_plan=response.get("generated_plan", ["Generate a plan to resolve the issue"]), # to be implemented by @Vijay
+            #     task_type = response.get("generated_plan", "rag")# will use defaults from Task model if not in response
+            # )
             
-            # Map LLM response to Task model fields
-            return Task(
+            # hardcoding for testing
+            task = Task(
                 id=str(uuid.uuid4()),
-                customer_name=response.get("customer_name"),
-                order_number=response.get("order_number"),
+                customer_name="Alicia",
+                order_number="12345",
                 order_status=response.get("order_status"),
                 issue_description=response.get("issue_description"), # Store raw issue_description
                 description=response.get("issue_description", "No description provided"), # Map to main description
-                # generated_plan and task_type will use defaults from Task model if not in response
+                generated_plan=response.get("generated_plan", ["Generate a plan to resolve the issue"]), # to be implemented by @Vijay
+                task_type = response.get("generated_plan", "rag")# will use defaults from Task model if not in response
             )
+
+            print(f"[LLMService] description: {task.description}")
+            print(f"[LLMService] generated_plan: {task.generated_plan}")
+            print(f"[LLMService] task_type: {task.task_type}")
+            print(f"[LLMService] customer_name: {task.customer_name}")
+            print(f"[LLMService] order_number: {task.order_number}")
+            print(f"[LLMService] order_status: {task.order_status}")
+            print(f"[LLMService] issue_description: {task.issue_description}")
+            # Map LLM response to Task model fields
+            return task
+        
         except Exception as e:
             print(f"[Error] Failed to generate task from LLM: {e}")
             return self._fallback_task()
