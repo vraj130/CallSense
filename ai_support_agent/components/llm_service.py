@@ -13,6 +13,7 @@ class LLMService:
     
     async def generate_task_from_transcript(self, transcript: List[TranscriptEntry]) -> Task:
         """Generate task/plan from conversation transcript"""
+        print("\n=== LLM Service: generate_task_from_transcript ===")
         
         # Format transcript for LLM
         conversation = "\n".join([
@@ -20,6 +21,10 @@ class LLMService:
             for entry in transcript
         ])
         
+        print("\nCurrent conversation:")
+        print(conversation)
+        print("=" * 50)
+
         prompt = f"""
         Analyze this customer support conversation and generate a task to help the agent:
         
@@ -32,8 +37,10 @@ class LLMService:
         """
         
         try:
+            print("Calling OpenAI API...")
             # Always call OpenAI API
             response = await self._call_openai(prompt)
+            print("OpenAI API call completed")
             
             return Task(
                 id=str(uuid.uuid4()),
