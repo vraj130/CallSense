@@ -19,6 +19,10 @@ class RAGService:
             # Load policies
             async with aiofiles.open(Config.POLICIES_PATH, 'r') as f:
                 self.policies = await f.read()
+            # print("[RAGService] Loaded knowledge base:", self.knowledge_base)
+            
+            # print("[RAGService] Loading policies from:", Config.POLICIES_PATH)
+
         except Exception as e:
             print(f"Error loading data: {e}")
             # Use default data for MVP
@@ -34,6 +38,9 @@ class RAGService:
     
     async def search(self, query: str) -> str:
         """Simple keyword-based search"""
+        query+=" 12345"
+
+        print(f"[RAGService] Performing search for query: '{query}'")
         query_lower = query.lower()
         results = []
         
@@ -53,6 +60,8 @@ class RAGService:
             results.append(f"Policy Information: {self.policies[:200]}...")
         
         if results:
+            print(f"[RAGService] Search results: {results}")
             return "\n".join(results)
         else:
+            print("[RAGService] No relevant information found.")
             return "No relevant information found. Please provide more details." 
