@@ -32,6 +32,13 @@ class GradioInterface:
                         elem_id="conversation",
                     )
 
+                    # Debug info
+                    debug_info = gr.Textbox(
+                        label="Debug Info",
+                        lines=3,
+                        interactive=False,
+                    )
+
                     # Trigger button
                     trigger_btn = gr.Button(
                         "🤖 Generate AI Assistance", variant="primary"
@@ -71,38 +78,56 @@ class GradioInterface:
                 ],
             )
 
-            # Auto-refresh conversation
+            # Auto-refresh conversation - reduced frequency to prevent conflicts
             self.interface.load(
                 fn=self.update_conversation,
-                outputs=[self.conversation_display, self.state_component],
-                every=0.5,  # Update every 500ms
+                outputs=[
+                    self.conversation_display,
+                    self.state_component,
+                    debug_info,
+                ],
+                every=1.0,  # Update every 1 second instead of 0.5
             )
 
         return self.interface
 
-    def update_conversation(self) -> Tuple[List[Tuple[str, str]], dict]:
+    def update_conversation(self) -> Tuple[List[Tuple[str, str]], dict, str]:
         """Update conversation display from state"""
-        state = self.state_manager.get_state()
+        try:
+            state = self.state_manager.get_state()
 
-        # Format conversation for Gradio chatbot
-        conversation = []
-        for entry in state.transcript:
-            if entry.speaker == Speaker.CUSTOMER:
-                conversation.append((entry.text, None))
-            elif entry.speaker == Speaker.AGENT:
-                conversation.append((None, entry.text))
-            else:
-                # For any other speaker, show as system message
-                conversation.append(
-                    (f"[{entry.speaker.value}] {entry.text}", None)
-                )
+            # Debug info
+            debug_text = f"Transcript entries: {len(state.transcript)}"
+            if state.transcript:
+                debug_text += f"\nLast entry: {state.transcript[-1].speaker.value}: {state.transcript[-1].text[:50]}..."
 
-        state_dict = {
-            "conversation": conversation,
-            "status": f"Task: {state.current_task.status if state.current_task else 'No active task'}",
-        }
+            # Format conversation for Gradio chatbot
+            conversation = []
+            for entry in state.transcript:
+                if entry.speaker == Speaker.CUSTOMER:
+                    conversation.append((entry.text, None))
+                elif entry.speaker == Speaker.AGENT:
+                    conversation.append((None, entry.text))
+                else:
+                    # For any other speaker, show as system message
+                    conversation.append(
+                        (f"[{entry.speaker.value}] {entry.text}", None)
+                    )
 
-        return conversation, state_dict
+            state_dict = {
+                "conversation": conversation,
+                "status": f"Task: {state.current_task.status if state.current_task else 'No active task'}",
+            }
+
+            print(
+                f"UI Update - Conversation items: {len(conversation)}"
+            )  # Debug print
+            return conversation, state_dict, debug_text
+
+        except Exception as e:
+            error_msg = f"Error updating conversation: {str(e)}"
+            print(error_msg)
+            return [], {"conversation": [], "status": "Error"}, error_msg
 
     def handle_trigger(self, state_dict: dict) -> Tuple[str, str, dict]:
         print("\n=== Trigger button clicked ===")  # Debug print

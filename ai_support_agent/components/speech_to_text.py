@@ -1,10 +1,9 @@
 import asyncio
 from datetime import datetime
-from typing import AsyncGenerator, Optional, Dict, Any
+from typing import AsyncGenerator, Optional, Dict, Any, Callable
 from utils.models import TranscriptEntry, Speaker
 import os
 import logging
-import queue
 import threading
 import pyaudio
 
@@ -28,9 +27,9 @@ class SpeechToTextService:
         self.is_running = False
         self.transcriber: Optional[aai.RealtimeTranscriber] = None
         self.microphone_stream: Optional[aai.extras.MicrophoneStream] = None
-        self.transcript_queue = queue.Queue()  # Thread-safe queue
-        self._loop = None
         self._audio = pyaudio.PyAudio()
+        self._streaming_task = None
+        self._entry_callback: Optional[Callable] = None
 
         # Get API key from environment variables
         api_key = os.getenv("ASSEMBLYAI_API_KEY")
@@ -84,13 +83,14 @@ class SpeechToTextService:
                     return i
             raise RuntimeError("No input devices found")
 
-    async def start_transcription(
-        self,
-    ) -> AsyncGenerator[TranscriptEntry, None]:
-        """Start real-time transcription service"""
-        logger.info("Starting AssemblyAI transcription service")
+    def set_entry_callback(self, callback: Callable[[TranscriptEntry], None]):
+        """Set callback for when new entries are available"""
+        self._entry_callback = callback
+
+    async def start_transcription_with_callback(self):
+        """Start transcription service with callback approach"""
+        logger.info("Starting AssemblyAI transcription service with callback")
         self.is_running = True
-        self._loop = asyncio.get_running_loop()
 
         try:
             # Create the Real-Time transcriber
@@ -123,22 +123,64 @@ class SpeechToTextService:
                 raise RuntimeError("Failed to create microphone stream")
 
             # Start streaming in a separate task
-            asyncio.create_task(self._stream_audio())
+            self._streaming_task = asyncio.create_task(self._stream_audio())
 
-            # Yield transcript entries as they come in
+            # Keep running while transcription is active
             while self.is_running:
-                try:
-                    # Use a timeout to allow checking is_running
-                    entry = await asyncio.get_event_loop().run_in_executor(
-                        None, lambda: self.transcript_queue.get(timeout=0.1)
-                    )
-                    yield entry
-                except queue.Empty:
-                    continue
+                await asyncio.sleep(0.1)
 
         except Exception as e:
             logger.error(f"Transcription error: {e}")
             self.stop_transcription()
+        finally:
+            if self._streaming_task and not self._streaming_task.done():
+                self._streaming_task.cancel()
+
+    async def start_transcription(
+        self,
+    ) -> AsyncGenerator[TranscriptEntry, None]:
+        """Start real-time transcription service - DEPRECATED, use callback version"""
+        # This is kept for backward compatibility, but we'll use the callback approach
+        logger.warning(
+            "start_transcription is deprecated, use start_transcription_with_callback"
+        )
+
+        entry_queue = asyncio.Queue()
+
+        def callback(entry: TranscriptEntry):
+            try:
+                # Use call_soon_threadsafe to safely add to queue from any thread
+                asyncio.get_event_loop().call_soon_threadsafe(
+                    lambda: asyncio.create_task(entry_queue.put(entry))
+                )
+            except Exception as e:
+                logger.error(f"Error in callback: {e}")
+
+        self.set_entry_callback(callback)
+
+        # Start transcription in background
+        transcription_task = asyncio.create_task(
+            self.start_transcription_with_callback()
+        )
+
+        try:
+            while self.is_running:
+                try:
+                    # Wait for entries with timeout
+                    entry = await asyncio.wait_for(
+                        entry_queue.get(), timeout=0.5
+                    )
+                    logger.info(
+                        f"Yielding entry: {entry.speaker.value}: {entry.text}"
+                    )
+                    yield entry
+                except asyncio.TimeoutError:
+                    continue
+                except Exception as e:
+                    logger.error(f"Error yielding entry: {e}")
+                    break
+        finally:
+            transcription_task.cancel()
 
     async def _stream_audio(self):
         """Stream audio in a separate task"""
@@ -157,9 +199,15 @@ class SpeechToTextService:
         """Stop the transcription service"""
         self.is_running = False
         if self.transcriber:
-            self.transcriber.close()
+            try:
+                self.transcriber.close()
+            except Exception as e:
+                logger.error(f"Error closing transcriber: {e}")
         if self._audio:
-            self._audio.terminate()
+            try:
+                self._audio.terminate()
+            except Exception as e:
+                logger.error(f"Error terminating audio: {e}")
         logger.info("Transcription service stopped")
 
     def _handle_transcript(self, transcript: aai.RealtimeTranscript):
@@ -169,7 +217,6 @@ class SpeechToTextService:
 
         if isinstance(transcript, aai.RealtimeFinalTranscript):
             # For now, we'll use a simple heuristic to determine speaker
-            # In a real implementation, you might want to use a more sophisticated approach
             speaker = "customer"  # Default speaker
 
             # Create the transcript entry
@@ -180,8 +227,13 @@ class SpeechToTextService:
             )
             logger.info(f"Generated entry: {entry.speaker.value}: {entry.text}")
 
-            # Add to thread-safe queue
-            self.transcript_queue.put(entry)
+            # Call the callback if set
+            if self._entry_callback:
+                try:
+                    self._entry_callback(entry)
+                    logger.info("Entry sent via callback")
+                except Exception as e:
+                    logger.error(f"Error in entry callback: {e}")
 
     def _handle_error(self, error: aai.RealtimeError):
         """Handle transcription errors"""
