@@ -7,6 +7,7 @@ import logging
 import threading
 import pyaudio
 from config import Config
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ except ImportError:
 
 
 class SpeechToTextService:
-    """Real-time Speech-to-Text service using AssemblyAI"""
+    """Real-time Speech-to-Text service using AssemblyAI - Single speaker mode"""
 
     def __init__(self):
         self.is_running = False
@@ -31,23 +32,7 @@ class SpeechToTextService:
         self._streaming_task = None
         self._entry_callback: Optional[Callable] = None
 
-
         aai.settings.api_key = Config.ASSEMBLYAI_API_KEY
-
-        # List available audio devices
-        # self._list_audio_devices()
-
-    def _list_audio_devices(self):
-        """List available audio input devices"""
-        logger.info("Available audio input devices:")
-        for i in range(self._audio.get_device_count()):
-            device_info = self._audio.get_device_info_by_index(i)
-            max_input_channels = device_info.get("maxInputChannels", 0)
-            if (
-                isinstance(max_input_channels, (int, float))
-                and max_input_channels > 0
-            ):
-                logger.info(f"Device {i}: {device_info.get('name')}")
 
     def _get_default_input_device(self) -> int:
         """Get the default input device index"""
@@ -129,52 +114,6 @@ class SpeechToTextService:
             if self._streaming_task and not self._streaming_task.done():
                 self._streaming_task.cancel()
 
-    async def start_transcription(
-        self,
-    ) -> AsyncGenerator[TranscriptEntry, None]:
-        """Start real-time transcription service - DEPRECATED, use callback version"""
-        # This is kept for backward compatibility, but we'll use the callback approach
-        logger.warning(
-            "start_transcription is deprecated, use start_transcription_with_callback"
-        )
-
-        entry_queue = asyncio.Queue()
-
-        def callback(entry: TranscriptEntry):
-            try:
-                # Use call_soon_threadsafe to safely add to queue from any thread
-                asyncio.get_event_loop().call_soon_threadsafe(
-                    lambda: asyncio.create_task(entry_queue.put(entry))
-                )
-            except Exception as e:
-                logger.error(f"Error in callback: {e}")
-
-        self.set_entry_callback(callback)
-
-        # Start transcription in background
-        transcription_task = asyncio.create_task(
-            self.start_transcription_with_callback()
-        )
-
-        try:
-            while self.is_running:
-                try:
-                    # Wait for entries with timeout
-                    entry = await asyncio.wait_for(
-                        entry_queue.get(), timeout=0.5
-                    )
-                    logger.info(
-                        f"Yielding entry: {entry.speaker.value}: {entry.text}"
-                    )
-                    yield entry
-                except asyncio.TimeoutError:
-                    continue
-                except Exception as e:
-                    logger.error(f"Error yielding entry: {e}")
-                    break
-        finally:
-            transcription_task.cancel()
-
     async def _stream_audio(self):
         """Stream audio in a separate task"""
         if not self.transcriber or not self.microphone_stream:
@@ -204,13 +143,14 @@ class SpeechToTextService:
         logger.info("Transcription service stopped")
 
     def _handle_transcript(self, transcript: aai.RealtimeTranscript):
-        """Handle incoming transcript data"""
+        """Handle incoming transcript data - treat all speech as from speaker"""
         if not transcript.text:
             return
 
         if isinstance(transcript, aai.RealtimeFinalTranscript):
-            # For now, we'll use a simple heuristic to determine speaker
-            speaker = "customer"  # Default speaker
+            # Treat all speech as from a single speaker (could be customer or agent)
+            # The LLM will figure out who is speaking based on context
+            speaker = "speaker"  # Generic speaker label
 
             # Create the transcript entry
             entry = TranscriptEntry(
@@ -224,7 +164,6 @@ class SpeechToTextService:
             if self._entry_callback:
                 try:
                     self._entry_callback(entry)
-                    # logger.info("Entry sent via callback")
                 except Exception as e:
                     logger.error(f"Error in entry callback: {e}")
 
