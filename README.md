@@ -1,4 +1,4 @@
-# Customer Support AI Agent
+# 🤖📞 CallSense – AI-Powered Customer Support Agent
 
 A real-time AI assistant system for customer support agents that transcribes live conversations and provides intelligent recommendations using RAG and AI agents.
 
