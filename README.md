@@ -2,6 +2,15 @@
 
 A real-time AI assistant system for customer support agents that transcribes live conversations and provides intelligent recommendations using RAG and AI agents.
 
+## What it does
+
+Transcribes ongoing conversations with speaker labels.
+Uses LLMs to generate actionable tasks based on the dialog.
+Verifies customer and order details by fetching from internal RAG-powered DB.
+Validates refund eligibility based on company policies.
+Executes actions through an AI agent using Playwright, such as issuing refunds or updating status.
+Provides feedback and policy-verification responses in real time.
+
 ## Features
 
 - 🎤 Real-time speech-to-text transcription
@@ -10,6 +19,16 @@ A real-time AI assistant system for customer support agents that transcribes liv
 - 🔄 Intelligent task orchestration
 - 💬 Gradio-based frontend with live updates
 - 🏗️ Modular, extensible architecture
+
+:
+
+## 🚀 Project Submission Info
+🎯 This project was built as part of [AgentHacks](https://www.agenthacks.org) — a hackathon focused on pushing the boundaries of agent-based AI systems.
+
+🛠️ Main Project Page: 🔗 [Weekday – Devpost Submission](https://devpost.com/software/weekday)
+
+📽️ [Watch Demo Video on YouTube](https://www.youtube.com/watch?v=PIxKVSEkmiQ)
+
 
 ## Quick Start
 
@@ -77,6 +96,9 @@ The application will launch at `http://localhost:7860`
 3. **Trigger AI assistance** - Click "🤖 Generate AI Assistance" button
 4. **Review recommendations** - AI suggestions appear in the right panel
 5. **Execute or reject** - Choose to apply or dismiss the AI recommendations
+
+
+
 
 ## Development
 
