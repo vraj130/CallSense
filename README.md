@@ -4,7 +4,7 @@ A real-time AI assistant system for customer support agents that transcribes liv
 
 ## 🧠 System Architecture
 
-![System Architecture](assets/images/architecture.png)
+![System Architecture](assets/images/system_architecture.png)
 
 ## What it does
 
